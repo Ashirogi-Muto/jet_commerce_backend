@@ -34,7 +34,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
 	extended: false
 }));
+//set models and routes
 models(app, mongoose);
+require('./route/index')(app);
+
 app.get('/auth/userDetails', function (req, res) {
 	res.json({ message: "success" });
 });
