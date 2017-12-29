@@ -8,10 +8,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+const models = require('./schema/index');
 global.__base = __dirname;
 
-var port = config.port;
+const port = config.port;
 
 const app = express();
 const server = require('http').createServer(app);
@@ -34,7 +34,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
 	extended: false
 }));
-
+models(app, mongoose);
 app.get('/auth/userDetails', function (req, res) {
 	res.json({ message: "success" });
 });
