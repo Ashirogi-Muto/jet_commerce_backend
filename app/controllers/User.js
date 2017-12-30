@@ -97,6 +97,16 @@ module.exports.userLogin = (req, res) =>{
 };
 
 module.exports.sendUserData = (req, res) => {
+	let auth = req.get('authorization');
+	if(!auth){
+		return res.json({
+			'status': false,
+			'message': 'Not authorized user'
+		})
+	}
+	auth = auth.split(' ');
+	let decodedData = req.app.jwt.decode(auth[1]);
+	console.log('auth', decodedData);
 	let productArray = [
 		{
 			id: 1,
@@ -245,11 +255,29 @@ module.exports.sendUserData = (req, res) => {
 			},
 			count: 0			
 		}
-	]
+	];
+	let orders = [];
+	req.app.db.models.User.findOne({email: decodedData.email}, (userErr, userData) => {
+		if(userErr || !userData){
+			return res.json({
+				'status': false,
+				'message': 'Could Not Find User',
+			});
+		}
+		req.app.db.models.Orders.findOne({_id: userData._id})
+			.populate('user')
+			.exec((orderErr, orderData) => {
+				console.log('ioioioioioi', orderErr, orderData);
+				if(!orderErr && orderData){
+					orders.push(orderData);
+				}
+			})
+	})	
 	return res.json({
 		'status': true,
 		'message': 'success',
-		'products': productArray
+		'products': productArray,
+		'orders': orders
 	});
 };
 
@@ -275,8 +303,9 @@ module.exports.createOrder = (req, res) => {
 		let orderData = {
 			orderAmount: parseFloat(req.body.finalAmount),
 			orderItems: req.body.orderItems,
-			user: decodedData._id
+			user: user._id
 		};
+		 console.log('ooooooo', orderData);
 		req.app.db.models.Orders.create(orderData, (orderError, orderData) => {
 			if(orderError){
 				return res.json({
