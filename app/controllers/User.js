@@ -53,7 +53,6 @@ module.exports.userLogin = (req, res) =>{
 		email: req.body.email,
 		password: req.body.password
 	};
-	console.log(user);
 	if(!user.email || !user.password){
 		return res.json({
 			'status': false,
@@ -106,7 +105,6 @@ module.exports.sendUserData = (req, res) => {
 	}
 	auth = auth.split(' ');
 	let decodedData = req.app.jwt.decode(auth[1]);
-	console.log('auth', decodedData);
 	let productArray = [
 		{
 			id: 1,
@@ -264,21 +262,20 @@ module.exports.sendUserData = (req, res) => {
 				'message': 'Could Not Find User',
 			});
 		}
-		req.app.db.models.Orders.findOne({_id: userData._id})
+		req.app.db.models.Orders.find()
 			.populate('user')
 			.exec((orderErr, orderData) => {
-				console.log('ioioioioioi', orderErr, orderData);
-				if(!orderErr && orderData){
-					orders.push(orderData);
+				if(!orderErr || orderData){
+					orders = orderData;
 				}
+				return res.json({
+					'status': true,
+					'message': 'success',
+					'products': productArray,
+					'orders': orders
+				});
 			})
-	})	
-	return res.json({
-		'status': true,
-		'message': 'success',
-		'products': productArray,
-		'orders': orders
-	});
+	})
 };
 
 module.exports.createOrder = (req, res) => {
@@ -292,7 +289,6 @@ module.exports.createOrder = (req, res) => {
 	}
 	auth = auth.split(' ');
 	let decodedData = req.app.jwt.decode(auth[1]);
-	console.log('auth', decodedData);
 	req.app.db.models.User.findOne({email: decodedData.email}, (err, user) => {
 		if(err){
 			return res.json({
@@ -305,7 +301,6 @@ module.exports.createOrder = (req, res) => {
 			orderItems: req.body.orderItems,
 			user: user._id
 		};
-		 console.log('ooooooo', orderData);
 		req.app.db.models.Orders.create(orderData, (orderError, orderData) => {
 			if(orderError){
 				return res.json({
@@ -313,11 +308,16 @@ module.exports.createOrder = (req, res) => {
 					'message': 'Could Not Create Order'
 				})
 			}
-			console.log(orderData);
 			return res.json({
 				'status': true,
 				'message': 'Order Created!'
 			})
 		})
 	})
+};
+
+module.exports.logOut = (req, res)=>{
+	return res.json({
+		'status': true,
+	});
 }
