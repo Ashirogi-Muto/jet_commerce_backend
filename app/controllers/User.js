@@ -10,7 +10,7 @@ module.exports.addUser = (req, res) =>{
 			'message': 'Email is required!'
 		})
 	}
-	if(!user.password || user.password.length > 6){
+	if(!user.password || user.password.length < 6){
 		return res.json({
 			'status': false,
 			'message': 'Plase enter valid password'
@@ -53,7 +53,7 @@ module.exports.userLogin = (req, res) =>{
 		email: req.body.email,
 		password: req.body.password
 	};
-
+	console.log(user);
 	if(!user.email || !user.password){
 		return res.json({
 			'status': false,
@@ -67,7 +67,7 @@ module.exports.userLogin = (req, res) =>{
 				'message': 'User find error'
 			});
 		}
-		if(!user){
+		if(!userData){
 			return res.json({
 				'status': false,
 				'message': 'Please enter valid login credentials'
@@ -93,5 +93,202 @@ module.exports.userLogin = (req, res) =>{
 				'message': 'Please enter valid login credentials'
 			});
 		}
+	})
+};
+
+module.exports.sendUserData = (req, res) => {
+	let productArray = [
+		{
+			id: 1,
+			name: 'Hustle Crew Neck',
+			price: '250.5',
+			image: 'http://via.placeholder.com/100x150',
+			attributes: {
+				size: [
+					{
+						type: 'S',
+						stock: 10
+					},
+					{
+						type: 'M',
+						stock: 10
+					},
+					{
+						type: 'XL',
+						stock: 10
+					}
+				],
+				stock: 30,
+			},
+			count: 0
+		},
+		{
+			id: 2,
+			name: 'Take a shot flask',
+			price: '255',
+			image: 'http://via.placeholder.com/100x150',
+			attributes: {
+				size: [
+					{
+						type: 'S',
+						stock: 5
+					},
+					{
+						type: 'M',
+						stock: 4
+					},
+					{
+						type: 'XL',
+						stock: 1
+					}
+				],
+				stock: 10,
+			},
+			count: 0			
+		},
+		{
+			id: 3,			
+			name: 'Shopify Hustle Crew Neck',
+			price: '300',
+			image: 'http://via.placeholder.com/100x150',
+			attributes: {
+				size: [
+					{
+						type: 'S',
+						stock: 1
+					},
+					{
+						type: 'M',
+						stock: 3
+					},
+					{
+						type: 'XL',
+						stock: 2
+					}
+				],
+				stock: 5,
+			},
+			count: 0
+			
+		},
+		{
+			id: 4,			
+			name: 'Hustle Crew Neck',
+			price: '500',
+			image: 'http://via.placeholder.com/100x150',
+			attributes: {
+				size: [
+					{
+						type: 'S',
+						stock: 0
+					},
+					{
+						type: 'M',
+						stock: 0
+					},
+					{
+						type: 'XL',
+						stock: 0
+					}
+				],
+				stock: 0,
+			},
+			count: 0
+			
+		},
+		{
+			id: 5,			
+			name: 'Take a shot flask',
+			price: '300',
+			image: 'http://via.placeholder.com/100x150',
+			attributes: {
+				size: [
+					{
+						type: 'S',
+						stock: 15
+					},
+					{
+						type: 'M',
+						stock: 15
+					},
+					{
+						type: 'XL',
+						stock: 5
+					}
+				],
+				stock: 35,
+			},
+			count: 0
+			
+		},
+		{
+			id: 6,			
+			name: 'Shopify Hustle Crew Neck',
+			price: '900',
+			image: 'http://via.placeholder.com/100x150',
+			attributes: {
+				size: [
+					{
+						type: 'S',
+						stock: 10
+					},
+					{
+						type: 'M',
+						stock: 10
+					},
+					{
+						type: 'XL',
+						stock: 10
+					}
+				],
+				stock: 30
+			},
+			count: 0			
+		}
+	]
+	return res.json({
+		'status': true,
+		'message': 'success',
+		'products': productArray
+	});
+};
+
+module.exports.createOrder = (req, res) => {
+	console.log(req.body);
+	let auth = req.get('authorization');
+	if(!auth){
+		return res.json({
+			'status': false,
+			'message': 'Not authorized user'
+		})
+	}
+	auth = auth.split(' ');
+	let decodedData = req.app.jwt.decode(auth[1]);
+	console.log('auth', decodedData);
+	req.app.db.models.User.findOne({email: decodedData.email}, (err, user) => {
+		if(err){
+			return res.json({
+				'status': false,
+				'message': 'User Not Found'
+			})
+		}
+		let orderData = {
+			orderAmount: parseFloat(req.body.finalAmount),
+			orderItems: req.body.orderItems,
+			user: decodedData._id
+		};
+		req.app.db.models.Orders.create(orderData, (orderError, orderData) => {
+			if(orderError){
+				return res.json({
+					'status': false,
+					'message': 'Could Not Create Order'
+				})
+			}
+			console.log(orderData);
+			return res.json({
+				'status': true,
+				'message': 'Order Created!'
+			})
+		})
 	})
 }

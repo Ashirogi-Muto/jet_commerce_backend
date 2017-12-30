@@ -3,10 +3,6 @@ module.exports = (app, mongoose) => {
 		name: String,
 		password: String,
 		email: String,
-		orders: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Orders'
-		},
 		createdAt: {
 			type: Date,
 			default: new Date()

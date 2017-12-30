@@ -38,10 +38,7 @@ app.use(bodyParser.urlencoded({
 models(app, mongoose);
 require('./route/index')(app);
 
-app.get('/auth/userDetails', function (req, res) {
-	res.json({ message: "success" });
-});
-app.get('/auth/user', function (req, res) {
+app.get('/auth/refresh', (req, res) => {
 	res.json({ message: "success" });
 });
 
